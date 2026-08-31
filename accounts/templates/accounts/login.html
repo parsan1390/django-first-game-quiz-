@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Login{% endblock %}
+{% block content %}
+<div class="max-w-md mx-auto mt-10">
+  <div class="bg-slate-900/70 backdrop-blur border border-slate-800 rounded-2xl p-8 shadow-2xl shadow-fuchsia-900/20">
+    <h1 class="text-2xl font-bold text-white mb-6 text-center">🔑 Login</h1>
+    {% if form.errors %}
+      <p class="text-red-400 text-sm mb-4 text-center">Incorrect username or password.</p>
+    {% endif %}
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+      <input type="text" name="username" placeholder="Username"
+             class="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500" required>
+      <input type="password" name="password" placeholder="Password"
+             class="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500" required>
+      <button type="submit"
+              class="w-full py-3 rounded-xl bg-gradient-to-l from-fuchsia-600 to-cyan-500 text-white font-bold hover:opacity-90 transition">
+        Login
+      </button>
+    </form>
+    <p class="text-slate-400 text-sm mt-6 text-center">
+      Don't have an account? <a href="{% url 'accounts:register' %}" class="text-fuchsia-400 hover:underline">Sign up</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

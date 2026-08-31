@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}{{ quiz.title }}{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto mt-6 space-y-6">
+
+  <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-8 text-center reveal">
+    <div class="text-4xl mb-3">{{ quiz.category.icon }}</div>
+    <h1 class="text-2xl font-bold text-white mb-2">{{ quiz.title }}</h1>
+    <p class="text-slate-400 mb-8">{{ quiz.description|default:"Pick a difficulty and start playing!" }}</p>
+
+    {% if user.is_authenticated %}
+      <div class="grid sm:grid-cols-3 gap-4">
+        {% for d in difficulties %}
+        <a href="{% url 'quiz:quiz_play' quiz.pk %}?difficulty={{ d.key }}"
+           class="hover-lift block bg-slate-800/60 border border-slate-700 rounded-xl p-5 hover:border-fuchsia-500 hover:bg-slate-800 transition-all duration-300">
+          <p class="text-white font-bold text-lg mb-1">{{ d.label }}</p>
+          <p class="text-slate-400 text-xs">{{ d.count }} questions</p>
+          <p class="text-slate-500 text-xs">{{ d.minutes }} min</p>
+        </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <a href="{% url 'accounts:login' %}"
+         class="inline-block px-8 py-3 rounded-xl bg-slate-700 text-white font-bold hover:bg-slate-600 transition">
+        Log in to play
+      </a>
+    {% endif %}
+  </div>
+
+  <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-6 reveal">
+    <h2 class="text-lg font-bold text-white mb-4">💬 Comments</h2>
+
+    {% if user.is_authenticated %}
+    <form method="post" action="{% url 'quiz:add_comment' quiz.pk %}" class="mb-6 flex gap-2">
+      {% csrf_token %}
+      <input type="text" name="text" required maxlength="500" placeholder="Write a comment..."
+             class="flex-1 px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 transition">
+      <button type="submit"
+              class="px-5 py-2 rounded-xl bg-gradient-to-l from-fuchsia-600 to-cyan-500 text-white font-bold hover:opacity-90 transition">
+        Post
+      </button>
+    </form>
+    {% else %}
+      <p class="text-slate-500 text-sm mb-6">Please <a href="{% url 'accounts:login' %}" class="text-fuchsia-400 hover:underline">log in</a> to comment.</p>
+    {% endif %}
+
+    <div class="space-y-3">
+      {% for comment in comments %}
+      <div class="bg-slate-800/60 rounded-xl px-4 py-3 flex justify-between items-start gap-3 hover-lift transition-all duration-300">
+        <div>
+          <p class="text-white text-sm font-semibold">{{ comment.user.username }}</p>
+          <p class="text-slate-300 text-sm mt-1">{{ comment.text }}</p>
+        </div>
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'quiz:toggle_like' comment.id %}" class="shrink-0">
+          {% csrf_token %}
+          <button type="submit" class="flex items-center gap-1 text-sm transition
+            {% if comment.id in liked_ids %}text-fuchsia-400{% else %}text-slate-500 hover:text-fuchsia-400{% endif %}">
+            {% if comment.id in liked_ids %}❤️{% else %}🤍{% endif %}
+            <span>{{ comment.like_count }}</span>
+          </button>
+        </form>
+        {% else %}
+        <span class="text-slate-500 text-sm shrink-0">🤍 {{ comment.like_count }}</span>
+        {% endif %}
+      </div>
+      {% empty %}
+      <p class="text-slate-500 text-sm">No comments yet — be the first!</p>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock %}

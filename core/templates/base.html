@@ -1,0 +1,187 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}GameQuiz{% endblock %} | GameQuiz</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: { fontFamily: { sans: ['Poppins', 'sans-serif'] } } } }
+  </script>
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <style>
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in-up { animation: fadeInUp .5s ease both; }
+
+    .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 10px 25px -5px rgba(217, 70, 239, .25); }
+    .hover-lift { transition: transform .25s ease, box-shadow .25s ease; }
+
+    @keyframes pulseGlow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(217, 70, 239, .4); }
+      50% { box-shadow: 0 0 0 8px rgba(217, 70, 239, 0); }
+    }
+    .btn-glow:hover { animation: pulseGlow 1.2s ease infinite; }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity .6s ease, transform .6s ease;
+    }
+    .reveal.revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+.cursor-dot {
+  position: fixed;
+  top: 0; left: 0;
+  border-radius: 9999px;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity .3s ease;
+  will-change: transform;
+  mix-blend-mode: screen;
+}
+
+#cursor-main {
+  width: 6px; height: 6px;
+  background: radial-gradient(circle, #ffffff 0%, #f0abfc 40%, transparent 70%);
+  filter: blur(0.5px);
+  box-shadow: 0 0 10px 3px rgba(217,70,239,.9), 0 0 18px 6px rgba(34,211,238,.5);
+}
+
+.cursor-trail {
+  width: 6px; height: 6px;
+  background: radial-gradient(circle, rgba(217,70,239,.9) 0%, transparent 70%);
+  filter: blur(1px);
+  box-shadow: 0 0 10px 3px rgba(217,70,239,.6), 0 0 16px 5px rgba(34,211,238,.35);
+}
+
+@media (hover: none) {
+  .cursor-dot { display: none; }
+}
+
+@media (hover: none) {
+  .cursor-dot { display: none; }
+}
+@media (hover: none) {
+  .cursor-dot { display: none; }
+}
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 font-sans bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-fuchsia-950/40 via-slate-950 to-slate-950">
+
+<div id="cursor-main" class="cursor-dot"></div>
+<div class="cursor-dot cursor-trail" data-trail="0"></div>
+<div class="cursor-dot cursor-trail" data-trail="1"></div>
+<div class="cursor-dot cursor-trail" data-trail="2"></div>
+<div class="cursor-dot cursor-trail" data-trail="3"></div>
+<div class="cursor-dot cursor-trail" data-trail="4"></div>
+<div class="cursor-dot cursor-trail" data-trail="5"></div>
+
+  <nav class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-50 animate-fade-in-up">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <a href="{% url 'core:home' %}" class="text-xl font-black text-white transition-transform hover:scale-105 inline-block">
+        🎮 <span class="text-transparent bg-clip-text bg-gradient-to-l from-fuchsia-500 to-cyan-400">GameQuiz</span>
+      </a>
+      <div class="flex items-center gap-4 text-sm">
+        <a href="{% url 'quiz:quiz_list' %}" class="text-slate-300 hover:text-white transition">Quizzes</a>
+        <a href="{% url 'leaderboard:leaderboard' %}" class="text-slate-300 hover:text-white transition">Leaderboard</a>
+        {% if user.is_authenticated %}
+          <a href="{% url 'accounts:profile' %}" class="text-slate-300 hover:text-white transition">{{ user.username }}</a>
+          <form method="post" action="{% url 'accounts:logout' %}" class="inline">
+            {% csrf_token %}
+            <button class="text-red-400 hover:text-red-300 transition">Logout</button>
+          </form>
+        {% else %}
+          <a href="{% url 'accounts:login' %}" class="text-slate-300 hover:text-white transition">Login</a>
+          <a href="{% url 'accounts:register' %}"
+             class="btn-glow px-4 py-2 rounded-xl bg-gradient-to-l from-fuchsia-600 to-cyan-500 text-white font-bold hover:opacity-90 transition">Sign Up</a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto px-4 py-10">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="mb-4 px-4 py-3 rounded-xl bg-fuchsia-900/30 border border-fuchsia-700 text-fuchsia-200 text-sm animate-fade-in-up">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="border-t border-slate-800 mt-16 py-6 text-center text-slate-500 text-sm">
+    Made with ❤️ and Django
+  </footer>
+
+  <script>
+// Neon cursor: main dot follows instantly, trail dots follow with slight delay
+const mainDot = document.getElementById('cursor-main');
+const trailDots = Array.from(document.querySelectorAll('.cursor-trail'));
+
+let mouseX = 0, mouseY = 0;
+let shown = false;
+
+// هر ذره دنبال‌رو، موقعیت فعلی خودشو نگه می‌داره
+const trailPos = trailDots.map(() => ({ x: 0, y: 0 }));
+
+document.addEventListener('mousemove', (e) => {
+  mouseX = e.clientX;
+  mouseY = e.clientY;
+  if (!shown) {
+    trailPos.forEach(p => { p.x = mouseX; p.y = mouseY; });
+    shown = true;
+  }
+  mainDot.style.opacity = '1';
+  trailDots.forEach(d => d.style.opacity = '0.85');
+});
+
+document.addEventListener('mouseleave', () => {
+  mainDot.style.opacity = '0';
+  trailDots.forEach(d => d.style.opacity = '0');
+});
+
+function animateCursor() {
+  mainDot.style.transform = `translate(${mouseX}px, ${mouseY}px) translate(-50%, -50%)`;
+  let targetX = mouseX;
+  let targetY = mouseY;
+
+  trailDots.forEach((dot, i) => {
+    const pos = trailPos[i];
+    const ease = 0.35; 
+    pos.x += (targetX - pos.x) * ease;
+    pos.y += (targetY - pos.y) * ease;
+    const scale = 1 - i * 0.1; 
+    const opacity = 0.85 - i * 0.12;
+    dot.style.transform = `translate(${pos.x}px, ${pos.y}px) translate(-50%, -50%) scale(${scale})`;
+    dot.style.opacity = shown ? opacity : 0;
+    targetX = pos.x;
+    targetY = pos.y;
+  });
+
+  requestAnimationFrame(animateCursor);
+}
+animateCursor();
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+  </script>
+</body>
+</html>

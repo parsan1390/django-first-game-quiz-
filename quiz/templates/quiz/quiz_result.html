@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}Quiz Result{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto mt-10">
+
+  <div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-10 text-center mb-8">
+    <div class="text-6xl mb-4">
+      {% if attempt.percentage >= 80 %}🏆{% elif attempt.percentage >= 50 %}🎉{% else %}💪{% endif %}
+    </div>
+    <h1 class="text-2xl font-bold text-white mb-2">{{ attempt.quiz.title }}</h1>
+    <p class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-l from-fuchsia-500 to-cyan-400 my-6">
+      {{ attempt.score }}/{{ attempt.total_questions }}
+    </p>
+    <p class="text-slate-400 mb-8">Final score: {{ attempt.percentage }}%</p>
+    <div class="flex gap-3 justify-center">
+      <a href="{% url 'quiz:quiz_list' %}" class="px-5 py-2 rounded-xl bg-slate-700 text-white hover:bg-slate-600 transition">More Quizzes</a>
+      <a href="{% url 'leaderboard:leaderboard' %}" class="px-5 py-2 rounded-xl bg-gradient-to-l from-fuchsia-600 to-cyan-500 text-white hover:opacity-90 transition">Leaderboard</a>
+    </div>
+  </div>
+
+  <h2 class="text-xl font-bold text-white mb-4">Review Answers</h2>
+  <div class="space-y-4">
+    {% for answer in answers %}
+    <div class="bg-slate-900/70 border rounded-2xl p-5
+                {% if answer.is_correct %}border-green-700{% else %}border-red-700{% endif %}">
+      <p class="text-white font-semibold mb-3">
+        {{ forloop.counter }}. {{ answer.question.text }}
+        {% if answer.is_correct %}
+          <span class="text-green-400 text-sm">✔ Correct</span>
+        {% else %}
+          <span class="text-red-400 text-sm">✘ Wrong</span>
+        {% endif %}
+      </p>
+      <div class="space-y-1">
+        {% for choice in answer.question.choices.all %}
+          <div class="px-3 py-2 rounded-lg text-sm
+            {% if choice.is_correct %}
+              bg-green-900/30 text-green-300 border border-green-700
+            {% elif choice == answer.selected_choice %}
+              bg-red-900/30 text-red-300 border border-red-700
+            {% else %}
+              text-slate-400
+            {% endif %}">
+            {{ choice.text }}
+            {% if choice.is_correct %} — correct answer{% endif %}
+            {% if choice == answer.selected_choice and not choice.is_correct %} — your choice{% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+
+<div class="text-center py-16 reveal">
+  <h1 class="text-4xl sm:text-5xl font-black text-white mb-4">
+    Put your gaming knowledge to the <span class="text-transparent bg-clip-text bg-gradient-to-l from-fuchsia-500 to-cyan-400">test</span>
+  </h1>
+  <p class="text-slate-400 max-w-xl mx-auto mb-8">
+    Dozens of exciting quizzes about your favorite games. Earn points and climb the leaderboard.
+  </p>
+  <a href="{% url 'quiz:quiz_list' %}"
+     class="btn-glow inline-block px-8 py-3 rounded-xl bg-gradient-to-l from-fuchsia-600 to-cyan-500 text-white font-bold hover:opacity-90 transition">
+    Get Started 🚀
+  </a>
+</div>
+
+<div class="grid sm:grid-cols-3 gap-4 mb-16 reveal">
+  <div class="hover-lift bg-slate-900/70 border border-slate-800 rounded-2xl p-6 text-center transition-all duration-300">
+    <p class="text-3xl font-black text-fuchsia-400">{{ total_quizzes }}</p>
+    <p class="text-slate-400 text-sm mt-1">Active quizzes</p>
+  </div>
+  <div class="hover-lift bg-slate-900/70 border border-slate-800 rounded-2xl p-6 text-center transition-all duration-300">
+    <p class="text-3xl font-black text-cyan-400">{{ categories.count }}</p>
+    <p class="text-slate-400 text-sm mt-1">Categories</p>
+  </div>
+  <div class="hover-lift bg-slate-900/70 border border-slate-800 rounded-2xl p-6 text-center transition-all duration-300">
+    <p class="text-3xl font-black text-white">🏆</p>
+    <p class="text-slate-400 text-sm mt-1">Live leaderboard</p>
+  </div>
+</div>
+
+<h2 class="text-2xl font-bold text-white mb-6 reveal">Categories</h2>
+<div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-16 reveal">
+  {% for category in categories %}
+  <a href="{% url 'quiz:quiz_list' %}" class="hover-lift bg-slate-900/70 border border-slate-800 rounded-2xl p-6 transition-all duration-300">
+    <div class="text-3xl mb-2">{{ category.icon }}</div>
+    <h3 class="text-white font-bold">{{ category.name }}</h3>
+  </a>
+  {% endfor %}
+</div>
+
+<h2 class="text-2xl font-bold text-white mb-6 reveal">🔥 Top Players</h2>
+<div class="bg-slate-900/70 border border-slate-800 rounded-2xl overflow-hidden mb-16 reveal">
+  {% for u in top_users %}
+  <div class="flex items-center justify-between px-6 py-4 {% if not forloop.last %}border-b border-slate-800{% endif %} hover:bg-slate-800/40 transition-colors duration-300">
+    <span class="text-white">{{ forloop.counter }}. {{ u.username }}</span>
+    <span class="text-cyan-400 font-bold">{{ u.total_score }}</span>
+  </div>
+  {% empty %}
+  <p class="text-slate-500 p-6 text-center">No rankings yet.</p>
+  {% endfor %}
+</div>
+
+<h2 class="text-2xl font-bold text-white mb-6 reveal">💬 Site Comments</h2>
+<div class="bg-slate-900/70 border border-slate-800 rounded-2xl p-6 reveal">
+  {% if user.is_authenticated %}
+  <form method="post" action="{% url 'core:add_site_comment' %}" class="mb-6 flex gap-2">
+    {% csrf_token %}
+    <input type="text" name="text" required maxlength="500" placeholder="What do you think of the site?"
+           class="flex-1 px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-fuchsia-500 transition">
+    <button type="submit"
+            class="px-5 py-2 rounded-xl bg-gradient-to-l from-fuchsia-600 to-cyan-500 text-white font-bold hover:opacity-90 transition">
+      Post
+    </button>
+  </form>
+  {% else %}
+  <p class="text-slate-500 text-sm mb-6">Please <a href="{% url 'accounts:login' %}" class="text-fuchsia-400 hover:underline">log in</a> to comment.</p>
+  {% endif %}
+
+  <div class="space-y-3">
+    {% for comment in site_comments %}
+    <div class="bg-slate-800/60 rounded-xl px-4 py-3 flex justify-between items-start gap-3 hover-lift transition-all duration-300">
+      <div>
+        <p class="text-white text-sm font-semibold">{{ comment.user.username }}</p>
+        <p class="text-slate-300 text-sm mt-1">{{ comment.text }}</p>
+      </div>
+      {% if user.is_authenticated %}
+      <form method="post" action="{% url 'quiz:toggle_like' comment.id %}" class="shrink-0">
+        {% csrf_token %}
+        <button type="submit" class="flex items-center gap-1 text-sm transition
+          {% if comment.id in liked_ids %}text-fuchsia-400{% else %}text-slate-500 hover:text-fuchsia-400{% endif %}">
+          {% if comment.id in liked_ids %}❤️{% else %}🤍{% endif %}
+          <span>{{ comment.like_count }}</span>
+        </button>
+      </form>
+      {% else %}
+      <span class="text-slate-500 text-sm shrink-0">🤍 {{ comment.like_count }}</span>
+      {% endif %}
+    </div>
+    {% empty %}
+    <p class="text-slate-500 text-sm">No comments yet — be the first!</p>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
